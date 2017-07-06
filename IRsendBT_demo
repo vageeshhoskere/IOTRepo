@@ -1,0 +1,51 @@
+#include <SoftwareSerial.h>
+#include <IRLib.h>
+
+int bluetoothTx = 2;
+int bluetoothRx = 4;
+SoftwareSerial bluetooth(bluetoothTx, bluetoothRx);
+
+String val="";
+IRsend My_Sender;
+
+void setup()
+{
+  Serial.begin(9600);
+  bluetooth.begin(115200);
+  bluetooth.print("$$$");
+  delay(100);
+  bluetooth.println("U,9600,N");
+  bluetooth.begin(9600);
+}
+
+void loop() {
+
+  if(bluetooth.available())
+  {
+    String toSend = bluetooth.readString();
+    Serial.println(toSend+" ---- ");
+    if(toSend.length()>4){
+          My_Sender.send(NECX,parseHex(toSend), 32);
+          toSend="";
+    } else {
+      Serial.println("OMG");
+    }
+  }
+}
+
+long parseHex (String data) {
+  long Value=0; 
+  char C;
+  for (int ij=0;ij<data.length();ij++) {
+    C=tolower(data.charAt(ij));
+    if ((C>='0')&&(C<='9')){
+      C=C-'0'; 
+    } else if ((C>='a') && (C<='f')) {
+      C=C-'a'+10;
+    } else {
+      return Value; 
+    }
+    Value= C+(Value<<4);
+  }; 
+  return Value; 
+}
